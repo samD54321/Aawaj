@@ -17,12 +17,12 @@ class HeadingText extends StatelessWidget {
       children: [
         Text(
           firstText,
-          style: context.textTheme.headline1,
+          style: context.textTheme.displayLarge,
           textAlign: TextAlign.justify,
         ),
         Text(
           secondText,
-          style: context.textTheme.headline2,
+          style: context.textTheme.displayMedium,
         ),
       ],
     ).px32();

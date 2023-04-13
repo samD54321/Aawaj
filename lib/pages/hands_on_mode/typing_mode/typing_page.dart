@@ -40,6 +40,16 @@ class _TypePageState extends State<TypePage> {
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Aawaj",
+          style: TextStyle(
+              color: context.primaryColor, fontWeight: FontWeight.w500),
+        ),
+        iconTheme: IconThemeData(color: context.primaryColor),
+        elevation: 1,
+        backgroundColor: context.canvasColor,
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -59,14 +69,19 @@ class _TypePageState extends State<TypePage> {
                 hideKeyboard: false,
                 hideSuggestionsOnKeyboardHide: false,
                 textFieldConfiguration: TextFieldConfiguration(
+                  style: TextStyle(color: context.primaryColor),
                   autocorrect: false,
                   controller: controllerWord,
                   autofocus: true,
                   focusNode: myFocusNode,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.keyboard_alt_outlined),
-                    border: OutlineInputBorder(),
-                    hintText: 'Type Words',
+                  decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: context.primaryColor),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: context.primaryColor),
+                    ),
+                    prefixIcon: const Icon(Icons.keyboard_alt_outlined),
                   ),
                 ),
                 suggestionsCallback: TranslitAPI.getWordSuggestions,
@@ -74,7 +89,11 @@ class _TypePageState extends State<TypePage> {
                   final word = suggestion!;
 
                   return ListTile(
-                    title: Text(word),
+                    textColor: context.cardColor,
+                    title: Text(
+                      word,
+                      style: TextStyle(color: context.primaryColor),
+                    ),
                   );
                 },
                 noItemsFoundBuilder: (context) => const SizedBox(
@@ -111,12 +130,13 @@ class _TypePageState extends State<TypePage> {
                         builder: ((context) =>
                             OutputPage(sentence: controllerWord.text))));
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: context.primaryColor),
               child: const Text(
                 "Speak",
-                style: TextStyle(fontSize: 32),
-              ).py12(),
-            ).px32(),
+                style: TextStyle(fontSize: 25),
+              ).py16(),
+            ).px24(),
           ],
         ),
       ),

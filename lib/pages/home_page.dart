@@ -10,16 +10,18 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ChoosePage(
-        firstText: 'Choose the option',
-        secondText: 'you want to use:',
-        thirdText: 'GO',
-        fourthText: 'hands on.',
-        fifthText: 'GO',
-        sixthText: 'hands free.',
-        oneRoute: MyRoutes.handsRoute,
-        twoRoute: MyRoutes.handsRoute,
-        firstimage: 'assets/images/hand.png',
-        secondimage: 'assets/images/eye.png',
+        mylist: [
+          'Choose the option',
+          'you want to use:',
+          'GO',
+          'hands on.',
+          'GO',
+          'hands free.',
+          MyRoutes.handsRoute,
+          MyRoutes.handsRoute,
+          'assets/images/hand.png',
+          'assets/images/eye.png',
+        ],
       ),
     );
   }

@@ -15,16 +15,18 @@ class HandsOn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ChoosePage(
-        firstText: 'Choose the way',
-        secondText: 'you want to give input:',
-        thirdText: 'Tap-Tap',
-        fourthText: 'GO !',
-        fifthText: 'Type',
-        sixthText: 'and GO!',
-        oneRoute: MyRoutes.tapRoute,
-        twoRoute: MyRoutes.typeRoute,
-        firstimage: 'assets/images/tap-tap.png',
-        secondimage: 'assets/images/type.png',
+        mylist: [
+          'Choose your',
+          'mode of input:',
+          'Tap-Tap',
+          'GO !',
+          'Type',
+          'and GO!',
+          MyRoutes.tapRoute,
+          MyRoutes.typeRoute,
+          'assets/images/tap-tap.png',
+          'assets/images/type.png',
+        ],
       ),
     );
   }

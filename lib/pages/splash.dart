@@ -4,8 +4,6 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:major_try/utils/routes.dart';
 
-import '../data/constants.dart';
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -46,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: themeColor,
+      backgroundColor: context.canvasColor,
       body: Stack(
         children: [
           // White Container top half
@@ -88,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
                     duration: const Duration(seconds: 1),
                     child: Text(
                       "Aawaj",
-                      style: context.textTheme.headline1,
+                      style: context.textTheme.displayLarge,
                       textAlign: TextAlign.justify,
                     ),
                   ),
@@ -120,14 +118,16 @@ class _BottomPart extends StatelessWidget {
             Text(
               'Aawaj: A voice for the voiceless',
               style: GoogleFonts.montserrat(
-                  fontSize: 27, color: white, fontWeight: FontWeight.bold),
+                  fontSize: 27,
+                  color: context.primaryColor,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30.0),
             Text(
               'Nepali Text-to-Speech (TTS) service with augmentative communication support',
               style: GoogleFonts.montserrat(
                 fontSize: 15.0,
-                color: white,
+                color: context.primaryColor,
                 height: 1.5,
               ),
             ),
@@ -136,14 +136,14 @@ class _BottomPart extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, MyRoutes.homeRoute);
+                  Navigator.pushNamed(context, MyRoutes.handsRoute);
                 },
                 child: Container(
                   height: 40.0,
                   width: 180.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
-                    border: Border.all(color: white, width: 2.0),
+                    border: Border.all(color: context.primaryColor, width: 2.0),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.centerRight,
@@ -154,14 +154,14 @@ class _BottomPart extends StatelessWidget {
                         "Open Aawaj",
                         style: GoogleFonts.montserrat(
                           fontSize: 15.0,
-                          color: white,
+                          color: context.primaryColor,
                           height: 1.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Icon(
                         Icons.chevron_right_outlined,
-                        color: white,
+                        color: context.primaryColor,
                       )
                     ],
                   ),

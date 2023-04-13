@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:major_try/model/words.dart';
 import 'package:major_try/pages/output_page.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -18,9 +17,9 @@ class NipatPage extends StatefulWidget {
 class _NipatPageState extends State<NipatPage> {
   final tappedWords = TextEditingController();
 
-  List<Words> verb = NipatData().nipatList;
-  List<Words> matra = MatraData().matraList;
-  List<Words> list = NipatData().nipatList;
+  List<String> verb = nipatList;
+  List<String> matra = matraList;
+  List<String> list = nipatList;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,6 @@ class _NipatPageState extends State<NipatPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Tap-Tap Go!"),
-        actions: [const Icon(Icons.add_box).px24()],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -42,8 +40,12 @@ class _NipatPageState extends State<NipatPage> {
             TextFormField(
               controller: widget.tappedWords,
               keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(), hintText: 'Tap Words'),
+              style: TextStyle(color: context.primaryColor),
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.primaryColor),
+                ),
+              ),
             ),
             SizedBox(
               height: height / 32,
@@ -89,29 +91,17 @@ class _NipatPageState extends State<NipatPage> {
     );
   }
 
-  Widget listItem(Words words) {
+  Widget listItem(String word) {
     return InkWell(
       splashColor: Colors.blue.withAlpha(30),
-      // onLongPress: (() {
-      //   list = matra;
-      //   setState(() {});
-      //   widget.tappedWords.text = "${widget.tappedWords.text} ${words.word}";
-      // }),
       onTap: () {
         // adding the newly tapped words to the previous words.
         if (list == matra) {
-          widget.tappedWords.text = "${widget.tappedWords.text}${words.word}";
+          widget.tappedWords.text = "${widget.tappedWords.text}$word";
           list = verb;
         } else {
-          widget.tappedWords.text = "${widget.tappedWords.text} ${words.word}";
+          widget.tappedWords.text = "${widget.tappedWords.text} $word";
         }
-
-        // setState(() {});
-        // Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //         builder: ((context) => OutputPage(
-        //             sentence: widget.tappedWords.text.substring(1)))));
       },
       child: Card(
           // elevation: 10,
@@ -119,7 +109,7 @@ class _NipatPageState extends State<NipatPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Center(
             child: Text(
-              words.word,
+              word,
               style: TextStyle(
                   fontFamily: GoogleFonts.poppins().fontFamily,
                   fontSize: 25,

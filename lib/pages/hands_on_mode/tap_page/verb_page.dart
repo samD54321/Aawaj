@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:major_try/model/words.dart';
-import 'package:major_try/pages/hands_on_mode/tap_page/verb_page.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../../../data/words_data.dart';
@@ -21,9 +19,9 @@ class VerbPage extends StatefulWidget {
 }
 
 class _VerbPageState extends State<VerbPage> {
-  List<Words> noun = VerbData().verbList;
-  List<Words> matra = MatraData().matraList;
-  List<Words> list = VerbData().verbList;
+  List<String> noun = verbList;
+  List<String> matra = matraList;
+  List<String> list = verbList;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +29,7 @@ class _VerbPageState extends State<VerbPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tap words to genrate text"),
-        actions: [const Icon(Icons.add_box).px24()],
+        title: const Text("Tap-Tap Go!"),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -44,9 +41,12 @@ class _VerbPageState extends State<VerbPage> {
             ),
             TextFormField(
               controller: widget.tappedWords,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+              keyboardType: TextInputType.none,
+              style: TextStyle(color: context.primaryColor),
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.primaryColor),
+                ),
               ),
             ),
             SizedBox(
@@ -115,21 +115,21 @@ class _VerbPageState extends State<VerbPage> {
     );
   }
 
-  Widget listItem(Words words) {
+  Widget listItem(String word) {
     return InkWell(
       splashColor: Colors.blue.withAlpha(30),
       onLongPress: (() {
         list = matra;
         setState(() {});
-        widget.tappedWords.text = "${widget.tappedWords.text} ${words.word}";
+        widget.tappedWords.text = "${widget.tappedWords.text} $word";
       }),
       onTap: () {
         // adding the newly tapped words to the previous words.
         if (list == matra) {
-          widget.tappedWords.text = "${widget.tappedWords.text}${words.word}";
+          widget.tappedWords.text = "${widget.tappedWords.text}$word";
           list = noun;
         } else {
-          widget.tappedWords.text = "${widget.tappedWords.text} ${words.word}";
+          widget.tappedWords.text = "${widget.tappedWords.text} $word";
         }
 
         // setState(() {});
@@ -145,7 +145,7 @@ class _VerbPageState extends State<VerbPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Center(
             child: Text(
-              words.word,
+              word,
               style: TextStyle(
                   fontFamily: GoogleFonts.poppins().fontFamily,
                   fontSize: 25,

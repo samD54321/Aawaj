@@ -2,22 +2,29 @@
 // More advanced examples demonstrating other features can be found in the same
 // directory as this example in the GitHub repository.
 
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:major_try/widgets/common.dart';
+import 'package:major_try/widgets/recording.dart';
+import 'package:major_try/widgets/seekbar.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:velocity_x/velocity_x.dart';
-import 'package:http/http.dart' as http;
 import '../utils/routes.dart';
 import 'package:major_try/data/globals.dart' as globals;
+
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class MyPlayer extends StatefulWidget {
   String _sentence = "";
 
-  MyPlayer(String sentence) {
-    this._sentence = sentence.trim();
+  MyPlayer(String sentence, {super.key}) {
+    _sentence = sentence.trim();
   }
 
   @override
@@ -25,10 +32,12 @@ class MyPlayer extends StatefulWidget {
 }
 
 class _MyPlayerState extends State<MyPlayer> with WidgetsBindingObserver {
+  // final recorder = FlutterSoundRecorder();
+
   String _sentence = "";
 
   _MyPlayerState(String sentence) {
-    this._sentence = sentence;
+    _sentence = sentence;
   }
 
   final _player = AudioPlayer();
@@ -36,37 +45,44 @@ class _MyPlayerState extends State<MyPlayer> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addObserver(this);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    WidgetsBinding.instance.addObserver(this);
+
+    // initRecorder();
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
     _init();
   }
 
+  // Future initRecorder() async {
+  //   final status = await Permission.microphone.request();
+  //   if (status != PermissionStatus.granted) {
+  //     throw 'Microphone permission not granted.';
+  //   }
+  //   await recorder.openRecorder();
+  // }
+
   Future<void> _init() async {
     // Inform the operating system of our app's audio attributes etc.
     // We pick a reasonable default for an app that plays speech.
     final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration.speech());
+    await session.configure(const AudioSessionConfiguration.speech());
     // Listen to errors during playback.
-    _player.playbackEventStream.listen((event) {},
-        onError: (Object e, StackTrace stackTrace) {
-      print('A stream error occurred: $e');
-    });
+    _player.playbackEventStream
+        .listen((event) {}, onError: (Object e, StackTrace stackTrace) {});
 
     // Try to load audio from a source and catch any errors.
-    try {
-      //bypassing the ngrok warning with header
-      await _player.setAudioSource(
-          AudioSource.uri(Uri.parse(globals.url + '/api?query=' + _sentence)));
-    } catch (e) {
-      print("Error loading audio source: $e");
-    }
+
+    //bypassing the ngrok warning with header
+    await _player.setAudioSource(
+        AudioSource.uri(Uri.parse('${globals.url}/api?query=$_sentence')));
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
+
+    // recorder.closeRecorder();
     // Release decoders and buffers back to the operating system making them
     // available for other apps to use.
     _player.dispose();
@@ -93,32 +109,23 @@ class _MyPlayerState extends State<MyPlayer> with WidgetsBindingObserver {
           (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
 
+  String responseText = "";
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: SafeArea(
+    final height = MediaQuery.of(context).size.height;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        SizedBox(
+          height: height / 3.5,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Listen",
-                style: context.textTheme.headline1,
-                textAlign: TextAlign.justify,
-              ),
-              Text(
-                " the Sound !",
-                style: context.textTheme.headline2,
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              // Display play/pause button and volume/speed sliders.
               ControlButtons(_player),
-              // Display seek bar. Using StreamBuilder, this widget rebuilds
-              // each time the position, buffered position or duration changes.
+              Text(
+                _sentence,
+                style: context.textTheme.bodyLarge
+                    ?.copyWith(color: context.primaryColor),
+              ).py12(),
               StreamBuilder<PositionData>(
                 stream: _positionDataStream,
                 builder: (context, snapshot) {
@@ -132,23 +139,94 @@ class _MyPlayerState extends State<MyPlayer> with WidgetsBindingObserver {
                   );
                 },
               ),
+            ],
+          ),
+        ).px12().py12(),
+        const Divider(
+          thickness: 3,
+          // color: context.primaryColor,
+        ),
+        SizedBox(
+          height: height / 3.5,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Text(
+                  responseText,
+                  style: context.textTheme.bodyLarge
+                      ?.copyWith(color: context.primaryColor),
+                ).py12(),
+              ),
+              responseText.isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          responseText = "";
+                        });
+                      },
+                      icon: const Icon(Icons.clear),
+                    )
+                  : Container(),
+              const Recorder(),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, MyRoutes.handsRoute);
+                onPressed: () async {
+                  var audioFile = File(globals.asrFilePath);
+                  var url = Uri.parse("${globals.url}/asr");
+                  var request = http.MultipartRequest("POST", url);
+
+                  request.files.add(http.MultipartFile(
+                    'file',
+                    audioFile.readAsBytes().asStream(),
+                    audioFile.lengthSync(),
+                    filename: "audio.mp4",
+                    contentType: MediaType.parse("audio/mp4"),
+                  ));
+                  final response = await request.send();
+                  http.Response res = await http.Response.fromStream(response);
+
+                  final resJson = jsonDecode(res.body);
+                  var message = resJson["message"];
+
+                  setState(() {
+                    responseText = message;
+                  });
                 },
                 style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(190, 50),
-                    backgroundColor: const Color.fromARGB(255, 89, 21, 101),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 20),
-                    textStyle: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold)),
-                child: const Text('Speak Again !'),
+                  backgroundColor: context.primaryColor,
+                ),
+                child: Text(
+                  'Transcribe !',
+                  style: TextStyle(
+                    color: context.canvasColor,
+                    fontSize: 25,
+                  ),
+                ).py12(),
               ),
             ],
           ),
+        ).px12().py12(),
+        const Divider(
+          thickness: 3,
+          // color: context.primaryColor,
         ),
-      ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pushNamed(context, MyRoutes.handsRoute);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.primaryColor,
+          ),
+          child: Text(
+            'Speak Again !',
+            style: TextStyle(
+              color: context.canvasColor,
+              fontSize: 25,
+            ),
+          ).py12(),
+        ),
+      ],
     );
   }
 }
@@ -156,35 +234,18 @@ class _MyPlayerState extends State<MyPlayer> with WidgetsBindingObserver {
 /// Displays the play/pause button and volume/speed sliders.
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
-
-  ControlButtons(this.player);
+  const ControlButtons(this.player, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Opens volume slider dialog
-        IconButton(
-          icon: Icon(Icons.volume_up),
-          onPressed: () {
-            showSliderDialog(
-              context: context,
-              title: "Adjust volume",
-              divisions: 10,
-              min: 0.0,
-              max: 1.0,
-              value: player.volume,
-              stream: player.volumeStream,
-              onChanged: player.setVolume,
-            );
-          },
-        ),
-
         /// This StreamBuilder rebuilds whenever the player state changes, which
         /// includes the playing/paused state and also the
         /// loading/buffering/ready state. Depending on the state we show the
         /// appropriate button or loading indicator.
+
         StreamBuilder<PlayerState>(
           stream: player.playerStateStream,
           builder: (context, snapshot) {
@@ -194,52 +255,38 @@ class ControlButtons extends StatelessWidget {
             if (processingState == ProcessingState.loading ||
                 processingState == ProcessingState.buffering) {
               return Container(
-                margin: EdgeInsets.all(8.0),
-                width: 64.0,
-                height: 64.0,
-                child: CircularProgressIndicator(),
+                margin: const EdgeInsets.all(8.0),
+                width: 55.0,
+                height: 55.0,
+                child: CircularProgressIndicator(
+                  color: context.primaryColor,
+                ),
               );
             } else if (playing != true) {
               return IconButton(
-                icon: Icon(Icons.play_arrow),
-                iconSize: 64.0,
+                color: context.primaryColor,
+                icon: const Icon(Ionicons.play_outline),
+                iconSize: 55.0,
                 onPressed: player.play,
               );
             } else if (processingState != ProcessingState.completed) {
               return IconButton(
-                icon: Icon(Icons.pause),
-                iconSize: 64.0,
+                color: context.primaryColor,
+                icon: const Icon(Ionicons.pause),
+                iconSize: 55.0,
                 onPressed: player.pause,
               );
             } else {
               return IconButton(
-                icon: Icon(Icons.replay),
-                iconSize: 64.0,
+                color: context.primaryColor,
+                icon: const Icon(Ionicons.arrow_redo_outline),
+                iconSize: 55.0,
                 onPressed: () => player.seek(Duration.zero),
               );
             }
           },
         ),
         // Opens speed slider dialog
-        StreamBuilder<double>(
-          stream: player.speedStream,
-          builder: (context, snapshot) => IconButton(
-            icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: () {
-              showSliderDialog(
-                context: context,
-                title: "Adjust speed",
-                divisions: 10,
-                min: 0.5,
-                max: 1.5,
-                value: player.speed,
-                stream: player.speedStream,
-                onChanged: player.setSpeed,
-              );
-            },
-          ),
-        ),
       ],
     );
   }

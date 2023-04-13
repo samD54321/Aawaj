@@ -1,34 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:major_try/widgets/option_box.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 import 'heading_text.dart';
 
 class ChoosePage extends StatelessWidget {
   const ChoosePage({
     Key? key,
-    required this.firstText,
-    required this.secondText,
-    required this.thirdText,
-    required this.fourthText,
-    required this.fifthText,
-    required this.sixthText,
-    required this.oneRoute,
-    required this.twoRoute,
-    required this.firstimage,
-    required this.secondimage,
+    required this.mylist,
   }) : super(key: key);
 
-  final String firstText,
-      secondText,
-      thirdText,
-      fourthText,
-      fifthText,
-      sixthText,
-      oneRoute,
-      twoRoute,
-      firstimage,
-      secondimage;
+  final List<String> mylist;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +22,7 @@ class ChoosePage extends StatelessWidget {
         SizedBox(
           height: height / 4,
         ),
-        HeadingText(firstText: firstText, secondText: secondText),
+        HeadingText(firstText: mylist[0], secondText: mylist[1]),
         SizedBox(
           height: height / 20,
         ),
@@ -50,18 +31,18 @@ class ChoosePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             OptionBox(
-                route: oneRoute,
-                image: firstimage,
-                text1: thirdText,
-                text2: fourthText),
+                route: mylist[6],
+                image: mylist[8],
+                text1: mylist[2],
+                text2: mylist[3]),
             SizedBox(
               width: width / 8,
             ),
             OptionBox(
-                route: twoRoute,
-                image: secondimage,
-                text1: fifthText,
-                text2: sixthText),
+                route: mylist[7],
+                image: mylist[9],
+                text1: mylist[4],
+                text2: mylist[5]),
           ],
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:major_try/widgets/player.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class OutputPage extends StatelessWidget {
   final String sentence;
@@ -9,7 +10,14 @@ class OutputPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("This is Output Page"),
+        title: Text(
+          "        Aawaj Synthesizer",
+          style: TextStyle(
+              color: context.primaryColor, fontWeight: FontWeight.w500),
+        ),
+        iconTheme: IconThemeData(color: context.primaryColor),
+        elevation: 1,
+        backgroundColor: context.canvasColor,
       ),
       body: MyPlayer(sentence),
     );
